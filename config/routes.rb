@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
   resources :contacts
-  # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
+  mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
+  #gem記述&install後 mount~を記述することで/letter_openerのURLにアクセスした時、メール送信BOXが出現します。
 end
