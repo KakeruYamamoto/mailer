@@ -25,15 +25,11 @@ class ContactsController < ApplicationController
   # POST /contacts.json
   def create
     @contact = Contact.new(contact_params)
-
-    respond_to do |format|
-      if @contact.save
-        format.html { redirect_to @contact, notice: 'Contact was successfully created.' }
-        format.json { render :show, status: :created, location: @contact }
-      else
-        format.html { render :new }
-        format.json { render json: @contact.errors, status: :unprocessable_entity }
-      end
+    if @contact.save#contact_mail(@contact)とすることで、contact_mailメソッドを呼び出す時に、引数として@contact(お問い合わせの情報)を渡しています。
+      ContactMailer.contact_mail(@contact).deliver  #ContactMailer~deliver追記することでお問い合わせ内容が保存された時にContactMailerのcontact_mailメソッドを呼び出してくれます。
+      redirect_to contacts_path, notice: 'Contact was successfully created.'
+    else
+      render :new
     end
   end
 
@@ -72,3 +68,14 @@ class ContactsController < ApplicationController
       params.require(:contact).permit(:name, :email, :content)
     end
 end
+
+
+
+
+
+#
+# 1. contacts_controllerのcreateアクションでお問い合わせをデータベースに保存する処理が流れる。
+# 2. 1の処理が流れた時ContactMailer.contact_mail(@contact).deliverのメイラーの処理が走り、app/mailers/contact_mailer.rbのcontact_mailメソッドが呼び出される。
+# 3. 引数として渡す@contactをcontact_mail(contact)の記述でcontactという引数名で受け取り、contact_mail内の処理が実行される。
+#    メソッド内で@contact = contactとしているのは@contactをView(contact_mail.html.erb)で使用するため。
+# 4. 処理が一通り流れ、メールがお問い合わせ者に届き、contact_mail.html.erbで記述されているHTMLが表示される。
